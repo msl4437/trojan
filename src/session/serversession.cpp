@@ -137,10 +137,11 @@ void ServerSession::in_recv(const string &data) {
         TrojanRequest req;
         bool valid = req.parse(data) != -1;
         if (valid) {
+            auto client_address = in_endpoint.address().to_string();
             auto password_iterator = config.password.find(req.password);
             if (password_iterator == config.password.end()) {
                 valid = false;
-                if (auth && auth->auth(req.password)) {
+                if (auth && auth->auth(req.password, client_address)) {
                     valid = true;
                     auth_password = req.password;
                     Log::log_with_endpoint(in_endpoint, "authenticated by authenticator (" + req.password.substr(0, 7) + ')', Log::INFO);

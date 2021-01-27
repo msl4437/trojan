@@ -46,11 +46,11 @@ Authenticator::Authenticator(const Config &config) {
     Log::log_with_date_time("connected to MySQL server", Log::INFO);
 }
 
-bool Authenticator::auth(const string &password) {
+bool Authenticator::auth(const string &password, string &client_address) {
     if (!is_valid_password(password)) {
         return false;
     }
-    if (mysql_query(&con, ("SELECT quota, download + upload FROM users WHERE password = '" + password + '\'').c_str())) {
+    if (mysql_query(&con, ("SELECT quota, download + upload, active, address FROM users WHERE password = '" + password + '\'').c_str())) {      
         Log::log_with_date_time(mysql_error(&con), Log::ERROR);
         return false;
     }
@@ -66,14 +66,29 @@ bool Authenticator::auth(const string &password) {
     }
     int64_t quota = atoll(row[0]);
     int64_t used = atoll(row[1]);
+    int64_t active = atoll(row[2]);
+    std::string address = row[3];   
     mysql_free_result(res);
-    if (quota < 0) {
-        return true;
-    }
-    if (used >= quota) {
-        Log::log_with_date_time(password + " ran out of quota", Log::WARN);
+    
+    if (quota > 0) {
+        if (used >= quota) {
+            Log::log_with_date_time(password + " ran out of quota", Log::WARN);
+            return false;
+        }
+    }else if (quota < 0) {
+        if (active > 0 and address != client_address) {
+            Log::log_with_date_time(password + " active denied ", Log::WARN);
+            return false;
+        }
+        if (mysql_query(&con, ("UPDATE users SET active = active + 1, address= '" + client_address + "' WHERE password = '" + password + '\'').c_str())) {
+            Log::log_with_date_time(mysql_error(&con), Log::ERROR);
+            return false;
+        }
+    }else{
+        Log::log_with_date_time(password + " access denied ", Log::WARN);
         return false;
     }
+
     return true;
 }
 
@@ -81,7 +96,7 @@ void Authenticator::record(const string &password, uint64_t download, uint64_t u
     if (!is_valid_password(password)) {
         return;
     }
-    if (mysql_query(&con, ("UPDATE users SET download = download + " + to_string(download) + ", upload = upload + " + to_string(upload) + " WHERE password = '" + password + '\'').c_str())) {
+    if (mysql_query(&con, ("UPDATE users SET active = active - 1, download = download + " + to_string(download) + ", upload = upload + " + to_string(upload) + " WHERE password = '" + password + '\'').c_str())) {
         Log::log_with_date_time(mysql_error(&con), Log::ERROR);
     }
 }
@@ -105,7 +120,7 @@ Authenticator::~Authenticator() {
 #else // ENABLE_MYSQL
 
 Authenticator::Authenticator(const Config&) {}
-bool Authenticator::auth(const string&) { return true; }
+bool Authenticator::auth(const string&, string&) { return true; }
 void Authenticator::record(const string&, uint64_t, uint64_t) {}
 bool Authenticator::is_valid_password(const string&) { return true; }
 Authenticator::~Authenticator() {}

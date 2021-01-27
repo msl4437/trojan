@@ -1,6 +1,8 @@
 # trojan
 
-[![Build Status](https://dev.azure.com/GreaterFire/Trojan-GFW/_apis/build/status/trojan-gfw.trojan?branchName=master)](https://dev.azure.com/GreaterFire/Trojan-GFW/_build/latest?definitionId=5&branchName=master)
+## 魔改版：主要增加无限流量模式下限制单用户登录
+
+请注意：如果quota大于0则会限制流量不限制IP登录，等于0则禁用账号，小于0则无限流量限制单IP登录
 
 An unidentifiable mechanism that helps you bypass GFW.
 
@@ -16,6 +18,23 @@ Installation guide on various platforms can be found in the [wiki](https://githu
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## MySQL
+
+```php
+CREATE TABLE users (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    username VARCHAR(64) NOT NULL,
+    password CHAR(56) NOT NULL,
+    active varchar(64) NOT NULL DEFAULT 0,
+    address text NOT NULL DEFAULT 0,
+    quota BIGINT NOT NULL DEFAULT -1,
+    download BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    upload BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX (password)
+);
+```
 
 ## Dependencies
 
