@@ -1,0 +1,32 @@
+name: Trojan Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  Linux:
+    runs-on: ubuntu-latest
+
+    container:
+      image: msl4437/trojan:build
+
+    steps:
+      - name: Build
+        run: |
+          apk add git
+          git clone https://github.com/msl4437/trojan.git
+          cd trojan
+          echo 'target_link_libraries(trojan dl)' >> CMakeLists.txt
+          cmake -DCMAKE_CXX_FLAGS="-static" -DMYSQL_INCLUDE_DIR=/usr/local/include/mariadb -DMYSQL_LIBRARY=/usr/local/lib/mariadb/libmysqlclient.a -DDEFAULT_CONFIG=/usr/local/trojan.json -DFORCE_TCP_FASTOPEN=ON -DBoost_USE_STATIC_LIBS=ON .
+          make -j$(nproc)
+
+      - name : Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: LinuxBinary
+          path: trojan/trojan
