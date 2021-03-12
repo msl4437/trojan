@@ -47,7 +47,7 @@ mysqladmin -u root password "$MySQLPass"
 mysql -u root -p$MySQLPass -e"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$MySQLPass' WITH GRANT OPTION;"
 mysql -u root -p$MySQLPass -e"FLUSH PRIVILEGES;"
 mysql -u root -p$MySQLPass -e"CREATE DATABASE IF NOT EXISTS trojan CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';"
-mysql -u root -p$MySQLPass -e"CREATE TABLE users (id INT UNSIGNED NOT NULL AUTO_INCREMENT, username VARCHAR(64) NOT NULL, password CHAR(56) NOT NULL, active varchar(64) NOT NULL DEFAULT 0, address text NOT NULL DEFAULT 0, quota BIGINT NOT NULL DEFAULT -1, download BIGINT UNSIGNED NOT NULL DEFAULT 0, upload BIGINT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (id), INDEX (password));"
+mysql -u root -p$MySQLPass -e"use trojan; CREATE TABLE users (id INT UNSIGNED NOT NULL AUTO_INCREMENT, username VARCHAR(64) NOT NULL, password CHAR(56) NOT NULL, active varchar(64) NOT NULL DEFAULT 0, address text NOT NULL DEFAULT 0, quota BIGINT NOT NULL DEFAULT -1, download BIGINT UNSIGNED NOT NULL DEFAULT 0, upload BIGINT UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (id), INDEX (password));"
 
 sed -i "s/{DOMAIN}/$DOMAIN/g" /usr/local/trojan.json
 sed -i "s/{MySQLPass}/$MySQLPass/g" /usr/local/trojan.json
