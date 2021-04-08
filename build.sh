@@ -16,13 +16,13 @@ make -j$(nproc) install
 cd ..
 rm -rf cmake-3.19.8.tar.gz cmake-3.19.8
 
-wget --no-check-certificate https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz
-tar -zxf boost_1_75_0.tar.gz
-cd boost_1_75_0
+wget --no-check-certificate https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz
+tar -zxf boost_1_72_0.tar.gz
+cd boost_1_72_0
 ./bootstrap.sh
 ./b2 -j$(nproc) --with-system --with-program_options variant=release link=static threading=multi runtime-link=shared install
 cd ..
-rm -rf boost_1_75_0.tar.gz boost_1_75_0
+rm -rf boost_1_72_0.tar.gz boost_1_72_0
 
 wget --no-check-certificate https://github.com/mariadb-corporation/mariadb-connector-c/archive/v3.1.12.tar.gz
 tar -zxf v3.1.12.tar.gz
